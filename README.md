@@ -54,20 +54,20 @@
 
 ### 🌐 Web Screenshots
 <div align="center">
-    <img src="[./scree/web1.PNG](https://ibb.co/v61tj95N)" alt="LandingPage" width="400" />
-    <img src="[./scree/web2.PNG](https://ibb.co/N22chy6c)" alt="Dashbaord" width="400" />
-    <img src="[./scree/web3.PNG](https://ibb.co/FkFsxymc)" alt="Notes" width="400" />
-    <img src="[./scree/web4.PNG](https://ibb.co/rGQ3Ndrh)" alt="FlashCard & Quizes" width="400" />
-    <img src="[./scree/web5.PNG](https://ibb.co/tpPBS3V8)" alt="FocusTimer" width="400" />
+    <img src="https://ibb.co/v61tj95N" alt="LandingPage" width="400" />
+    <img src="https://ibb.co/N22chy6c" alt="Dashbaord" width="400" />
+    <img src="https://ibb.co/FkFsxymc" alt="Notes" width="400" />
+    <img src="https://ibb.co/rGQ3Ndrh" alt="FlashCard & Quizes" width="400" />
+    <img src="https://ibb.co/tpPBS3V8" alt="FocusTimer" width="400" />
 </div>
 
 ### 📱 Mobile Screenshots
 <div align="center">
-    <img src="[./scree/mob1.PNG](https://ibb.co/GfzC8C1j)" alt="Mobile Dashboard" width="200" />
-    <img src="[./scree/mob2.PNG](https://ibb.co/mr53qnnp)" alt="Side Bar" width="200" />
-    <img src="[./scree/mob3.PNG](https://ibb.co/4wf32z2k)" alt="Focus Time" width="200" />
-    <img src="[./scree/mob4.PNG](https://ibb.co/bg1WZs0n)" alt="Study Planner" width="200" />
-    <img src="[./scree/mob5.PNG](https://ibb.co/Z6yjhCkT)" alt="Ask AI" width="200" />
+    <img src="https://ibb.co/GfzC8C1j" alt="Mobile Dashboard" width="200" />
+    <img src="https://ibb.co/mr53qnnp" alt="Side Bar" width="200" />
+    <img src="https://ibb.co/4wf32z2k" alt="Focus Time" width="200" />
+    <img src="https://ibb.co/bg1WZs0n" alt="Study Planner" width="200" />
+    <img src="https://ibb.co/Z6yjhCkT" alt="Ask AI" width="200" />
 </div>
 
 ---
