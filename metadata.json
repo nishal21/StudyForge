@@ -1,0 +1,9 @@
+{
+  "name": "StudyForge",
+  "description": "An AI-powered student productivity tool for note summarization, flashcard generation, focused study sessions, and instant answers.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "prompt": ""
+}
