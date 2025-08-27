@@ -232,13 +232,13 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
     }
     if (inputType === 'camera') {
         return (
-            <div className="w-full flex-grow flex flex-col items-center justify-center bg-slate-900 rounded-lg border border-slate-700 relative">
+            <div className="w-full flex-grow flex flex-col items-center justify-center bg-slate-900 rounded-lg border border-slate-700">
                 <video
                     ref={videoRef}
                     autoPlay
                     muted
                     playsInline
-                    className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-contain rounded-lg"
                     style={{ display: isCapturing ? 'block' : 'none' }}
                 />
                 {!isCapturing && <p className="text-slate-500">Camera is off</p>}
@@ -322,7 +322,7 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
                           <Button variant={inputType === 'voice' ? 'secondary' : 'ghost'} size="sm" onClick={() => setInputType('voice')}><MicIcon/></Button>
                        </div>
                        <div className="flex items-center gap-2">
-                           {inputType === 'camera' && (<> {!isCapturing ? <Button size="sm" onClick={startCamera} disabled={isLoading}>Start Camera</Button> : <> <Button size="md" onClick={handleCapture} disabled={isLoading}>{isLoading ? 'Processing...' : 'Capture'}</Button><Button size="md" variant="secondary" onClick={stopCamera}>Stop</Button></>} </>)}
+                           {inputType === 'camera' && (<> {!isCapturing ? <Button size="sm" onClick={startCamera}>Start Camera</Button> : <> <Button size="sm" onClick={handleCapture} disabled={isLoading}>{isLoading ? 'Processing...' : 'Capture'}</Button><Button size="sm" variant="secondary" onClick={stopCamera}>Stop</Button></>} </>)}
                            {inputType === 'voice' && (<> {!isRecording ? <Button size="sm" onClick={startRecording} disabled={isLoading}>Record</Button> : <Button size="sm" variant="danger" onClick={stopRecording}>Stop</Button>} </>)}
                        </div>
                   </div>
