@@ -15,7 +15,7 @@ const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height
 const TagIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>;
 const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
 const SearchIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
-const BackIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>;
+const BackIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>;
 
 
 interface MyNotesProps {
@@ -75,9 +75,18 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if(videoRef.current) {
+        if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          setIsCapturing(true);
+          // Wait for metadata to load to ensure dimensions are correct before playing
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current?.play().then(() => {
+                setIsCapturing(true);
+            }).catch(err => {
+                console.error("Failed to play camera stream:", err);
+                alert("Could not start the camera. Please ensure permissions are granted and no other app is using it.");
+                stopCamera();
+            });
+          };
         }
       } catch (error) {
         console.error("Error accessing camera:", error);
@@ -205,7 +214,15 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
     if (inputType === 'camera') {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 rounded-lg border border-slate-700">
-                {isCapturing ? <video ref={videoRef} autoPlay className="w-full h-full object-contain rounded-lg"></video> : <p className="text-slate-500">Camera is off</p>}
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full h-full object-contain rounded-lg"
+                    style={{ display: isCapturing ? 'block' : 'none' }}
+                />
+                {!isCapturing && <p className="text-slate-500">Camera is off</p>}
                 <canvas ref={canvasRef} className="hidden"></canvas>
             </div>
         );
