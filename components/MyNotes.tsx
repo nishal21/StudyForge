@@ -35,6 +35,7 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
   const [inputType, setInputType] = useState<InputType>('text');
   const [isCapturing, setIsCapturing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isFlashing, setIsFlashing] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
@@ -56,6 +57,11 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
     }
   }, [activeNote]);
   
+  const triggerFlash = () => {
+    setIsFlashing(true);
+    setTimeout(() => setIsFlashing(false), 700);
+  };
+
   const handleSetActiveNote = (note: Note | null) => {
     setActiveNote(note);
     if(note) {
@@ -77,7 +83,6 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          // Wait for metadata to load to ensure dimensions are correct before playing
           videoRef.current.onloadedmetadata = () => {
             videoRef.current?.play().then(() => {
                 setIsCapturing(true);
@@ -105,7 +110,7 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
   };
 
   const handleCapture = async () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current || !activeNote) return;
     setIsLoading(true);
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -114,10 +119,17 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
     const context = canvas.getContext('2d');
     context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
     const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
+    
+    stopCamera();
 
     const extractedText = await geminiService.extractTextFromImage(base64Image);
-    setContent(prev => prev ? `${prev}\n\n${extractedText}` : extractedText);
-    stopCamera();
+    const latestNote = notes.find(n => n.id === activeNote.id);
+    if (latestNote) {
+        const newContent = latestNote.content ? `${latestNote.content}\n\n${extractedText}` : extractedText;
+        setContent(newContent);
+        onUpdateNote({ ...latestNote, content: newContent });
+        triggerFlash();
+    }
     setIsLoading(false);
   };
   
@@ -136,7 +148,14 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
           reader.onloadend = async () => {
             const base64Audio = (reader.result as string).split(',')[1];
             const transcribedText = await geminiService.transcribeAudio(base64Audio, audioBlob.type);
-            setContent(prev => prev ? `${prev}\n\n[Voice Note]:\n${transcribedText}` : `[Voice Note]:\n${transcribedText}`);
+            
+            const latestNote = notes.find(n => n.id === activeNote?.id);
+            if (latestNote) {
+                const newContent = latestNote.content ? `${latestNote.content}\n\n[Voice Note]:\n${transcribedText}` : `[Voice Note]:\n${transcribedText}`;
+                setContent(newContent);
+                onUpdateNote({ ...latestNote, content: newContent });
+                triggerFlash();
+            }
             setIsLoading(false);
           };
           stream.getTracks().forEach(track => track.stop());
@@ -206,14 +225,14 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onBlur={handleSave}
-                className="w-full h-full bg-slate-900/70 text-slate-200 rounded-lg p-4 focus:ring-2 focus:ring-violet-500 transition border border-slate-700 resize-none"
+                className="w-full flex-grow bg-slate-900/70 text-slate-200 rounded-lg p-4 focus:ring-2 focus:ring-violet-500 transition border border-slate-700 resize-none"
                 placeholder="Type your notes here..."
             />
         );
     }
     if (inputType === 'camera') {
         return (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 rounded-lg border border-slate-700">
+            <div className="w-full flex-grow flex flex-col items-center justify-center bg-slate-900 rounded-lg border border-slate-700">
                 <video
                     ref={videoRef}
                     autoPlay
@@ -229,7 +248,7 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
     }
     if (inputType === 'voice') {
         return (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 rounded-lg border border-slate-700 text-center">
+            <div className="w-full flex-grow flex flex-col items-center justify-center bg-slate-900 rounded-lg border border-slate-700 text-center">
                 {isRecording ? (
                     <div className="flex items-center gap-3">
                         <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>
@@ -290,7 +309,7 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
                   <BackIcon/> Back to list
                 </Button>
               </div>
-              <Card className="p-4 flex-grow flex flex-col">
+              <Card className={`p-4 flex-grow flex flex-col ${isFlashing ? 'animate-flash' : ''}`}>
                   <div className="flex-grow flex flex-col">
                       {renderInputArea()}
                   </div>
@@ -303,8 +322,8 @@ export const MyNotes: React.FC<MyNotesProps> = ({ notes, activeNote, setActiveNo
                           <Button variant={inputType === 'voice' ? 'secondary' : 'ghost'} size="sm" onClick={() => setInputType('voice')}><MicIcon/></Button>
                        </div>
                        <div className="flex items-center gap-2">
-                           {inputType === 'camera' && (<> {!isCapturing ? <Button size="sm" onClick={startCamera}>Start Camera</Button> : <> <Button size="sm" onClick={handleCapture}>Capture</Button><Button size="sm" variant="secondary" onClick={stopCamera}>Stop</Button></>} </>)}
-                           {inputType === 'voice' && (<> {!isRecording ? <Button size="sm" onClick={startRecording}>Record</Button> : <Button size="sm" variant="danger" onClick={stopRecording}>Stop</Button>} </>)}
+                           {inputType === 'camera' && (<> {!isCapturing ? <Button size="sm" onClick={startCamera}>Start Camera</Button> : <> <Button size="sm" onClick={handleCapture} disabled={isLoading}>{isLoading ? 'Processing...' : 'Capture'}</Button><Button size="sm" variant="secondary" onClick={stopCamera}>Stop</Button></>} </>)}
+                           {inputType === 'voice' && (<> {!isRecording ? <Button size="sm" onClick={startRecording} disabled={isLoading}>Record</Button> : <Button size="sm" variant="danger" onClick={stopRecording}>Stop</Button>} </>)}
                        </div>
                   </div>
               </Card>
